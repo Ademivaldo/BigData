@@ -44,6 +44,11 @@ def Escolha_tela1():
         valor = 3
     return valor
 
+def mostrar(lista):
+    lista2 = []
+    for i in range(len(lista)):
+        lista2.append(lista[i])
+    return lista2
 
 
 def tela_inicial():
@@ -59,9 +64,10 @@ def tela_inicial():
         [sg.Radio("Gráfico em formato de Pizza", "RADIO", key='_GRA_1_')],
         [sg.Radio("Gráfico em formato de Coluna", "RADIO", key='_GRA_2_')],
         [sg.Radio("Gráfico em formato de Linha", "RADIO", key='_GRA_3_')],
-        [sg.Push(),sg.Button("Avançar", size=(10,1), key='_AVANCAR_'),sg.Push()]
+        [sg.Push(),sg.Button("Avançar", size=(10,1), key='_AVANCAR_'),sg.Push()],
+        [ sg.Push(), sg.Button('Pesquisa em tabela', key='_TABELA_'), sg.Push()]
     ]
-    return sg.Window('Sistema EA', layout=layout, finalize=True, size=(520, 510), )
+    return sg.Window('Sistema EA', layout=layout, finalize=True, size=(520, 510))
 
 def tela_grafico():
 
@@ -78,14 +84,42 @@ def tela_grafico():
         [sg.Button('Ok', size=(10,1), key='_OK_')],
         [sg.Button('Voltar', size=(10,1), key='_VOLTAR_')],
         [sg.Button('Sair', size=(10,1), key='_SAIR_')],
+    ]
+    return sg.Window('Sistema EA', layout=layout, finalize=True, size=(520, 510), element_justification='center')
 
-
+def janela_escolha():
+    sg.theme('LightGrey1')
+    layout = [
+        [sg.Text("\n")],
+        [sg.Push(), sg.Image(r'ea_logo.png'), sg.Push()],
+        [sg.Text("\n")],
+        [sg.Text('\n\nEscolha um topico: ', font=("Arial",12))],
+        [sg.Combo(list(Dados.columns), size=(20, 10), readonly=True, key='_ESCOLHA_', bind_return_key=True,
+                  enable_events=True)],
+        # [sg.Text('senha'), sg.Input(key='senha', password_char='*')],
+        [sg.Text('Quantidade de linhas no retorno: ', font=("Arial",12) )],
+        [sg.Input(key='_QUANTIDADE_DE_LINHAS_',s=5, )],
+        [sg.Button('Buscar 🔎', key='_puxar_dados_', size=(10,1))],
+        [sg.Button('Voltar', key='_GO_JANELA1_', size=(10,1))]
 
     ]
     return sg.Window('Sistema EA', layout=layout, finalize=True, size=(520, 510), element_justification='center')
 
 
-janela1, janela2 = tela_inicial(), None
+def janela_amostra(l) -> object:
+    data = [[nome] for nome in l]
+
+    sg.theme('LightGrey1')
+    layout = [
+        [sg.Table(values=data ,headings=[valores['_ESCOLHA_']],auto_size_columns=True,justification='left' ,expand_x=True,
+                  num_rows=25)],
+        [sg.Button('Voltar',key='_GO_JANELA3_', size=(10,1))],
+
+    ]
+    return sg.Window('Sistema EA', layout=layout, finalize=True, size=(520, 510))
+
+
+janela1, janela2, janela3, janela4 = tela_inicial(), None, None, None
 
 
 
@@ -102,6 +136,31 @@ while True:
         else:
             sg.popup_ok('Por gentileza, Escolha um tipo de gráfico\n',  title='Atenção')
 
+    if eventos == '_TABELA_':
+        janela1.hide()
+        janela3 = janela_escolha()
+
+    if eventos == '_puxar_dados_' and valores['_QUANTIDADE_DE_LINHAS_'] != '' and \
+            valores['_ESCOLHA_'] != '':
+        nd = valores['_ESCOLHA_']
+        bd = Dados[nd]
+        bd = bd.fillna('Não informado')
+        # print(bd.head(10))
+        # if window == janela1 and eventos == '_puxar_dados_':
+        Dado_usado = bd.head(int(valores['_QUANTIDADE_DE_LINHAS_']))  # .tolist()
+        # print(Dado_usado.values[3])
+        Dado_usado = mostrar(Dado_usado.values)
+        janela4 = janela_amostra(Dado_usado)
+        janela1.hide()
+        print(Dado_usado)
+
+    if eventos == '_GO_JANELA3_':
+        janela4.hide()
+        janela3 = janela_escolha()
+
+    if eventos == '_GO_JANELA1_':
+        janela3.hide()
+        janela1 = tela_inicial()
 
     if  eventos == '_OK_' and resp[0] == True:
         if valores['_ESCOLHA_TELA2_'] == [0]:
