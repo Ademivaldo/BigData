@@ -112,16 +112,44 @@ while True:
             #print(agrupamento_mes)
 
         elif valores['_ESCOLHA_TELA2_'] == [3]:
-            Dados = Dados.groupby(Dados['Convenio'])['Procedimento realizado'].count().plot(
+            Dados = Dados.groupby(Dados['Convenio'])['Procedimento realizado'].count()
+            Dados.plot(
                 kind='pie', autopct='%0.2f%%')
             plt.show()
 
         elif valores['_ESCOLHA_TELA2_'] == [4]:
-            Dados = Dados.groupby(Dados['Fornecedor'])['Total Guia'].value_counts().plot(
-                 kind='pie', autopct='%0.2f%%')
-            plt.show()
-            print(Dados.head())
+            # Dados = Dados.fillna('Não informado')
+            # Dados = Dados.groupby(Dados['Fornecedor'])['Total Guia'].value_counts()
+            # print(Dados.head(20))
+            # Dados.plot(
+            #      kind='pie', autopct='%0.2f%%')
+            # #plt.show()
+            # print(Dados.head())
+            Dados['Data'] = pd.to_datetime(Dados['Data'], format='%d-%m-%Y')
+            Dados['Ano'] = Dados['Data'].dt.year
 
+            Fornecedor_Ano = Dados.groupby('Fornecedor')['Total Guia'].sum()
+
+            plt.figure()
+            plt.pie(Fornecedor_Ano, labels=Fornecedor_Ano.index, autopct='%1.1f%%')
+            plt.title('Total de fornecedores por data (Todos os anos)')
+            plt.axis('equal')
+            plt.show()
+
+        elif valores['_ESCOLHA_TELA2_'] == [5]:
+            Dados['Data'] = pd.to_datetime(Dados['Data'])
+            Dados['Ano'] = Dados['Data'].dt.year
+
+            df_grouped = Dados.groupby(['Ano', 'Fornecedor'])['Total Guia'].sum().reset_index()
+
+            #plt.figure(figsize=(8, 6))
+
+            for ano in df_grouped['Ano'].unique():
+                df_ano = df_grouped[df_grouped['Ano'] == ano]
+                plt.pie(df_ano['Total Guia'], labels=df_ano['Fornecedor'], autopct='%1.0f%%', startangle=90)
+                plt.title(f'Total Produzido por Fornecedor - Ano {ano}')
+                plt.axis('equal')
+                plt.show()
             ##############################################################################################
 
 
