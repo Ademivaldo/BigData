@@ -19,11 +19,16 @@ def read_data():
 
 
 Dados = read_data()
-Dado_usado = []
-opcoes = ['Procedimento por ano','Procedimento por mês','Valor faturado por convênio e data',
-          'Quantidade de procedimentos realizados por convênio',#'Quantidade de procedimentos e valor faturado',
-          'Valor faturado e quantidade de procedimentos realizados por fornecedor','Total produzido por ano e por fornecedor']
 
+data = ()
+
+Dado_usado = []
+
+opcoes_P = ['Procedimento por ano','Procedimento por mês']
+
+opcoes_L = ['Valor faturado por convênio e data', 'Quantidade de procedimentos realizados por convênio']
+
+opcoes_B = ['Valor faturado e quantidade de procedimentos realizados por fornecedor', 'Total produzido por ano e por fornecedor']
 
 
 def grafico(p1):
@@ -69,18 +74,24 @@ def tela_inicial():
     ]
     return sg.Window('Sistema EA', layout=layout, finalize=True, size=(520, 510))
 
-def tela_grafico():
+def tela_grafico(grafico):
+    global data
+    if (grafico == valores['_GRA_1_']):
+        data = [[nome] for nome in opcoes_P]
+    if (grafico == valores['_GRA_2_']):
+        data = [[nome] for nome in opcoes_L]
+    if (grafico == valores['_GRA_3_']):
+        data = [[nome] for nome in opcoes_B]
 
 
-    data = [[nome] for nome in opcoes]
     sg.theme('LightGrey1')
 
     layout = [
         [sg.Text("Escolhendo os dados", font=("Arial",12), text_color="white", background_color="black")],
         [sg.Push(),sg.Image(r'ea_logo.png'),sg.Push()],
         [sg.Text("\n")],
-        [sg.Table(values=data,headings=['Opçoes'], auto_size_columns=True, key='_ESCOLHA_TELA2_',
-                  justification='left' ,expand_x=True)],
+        (sg.Table(values=data, headings=['Opçoes'], auto_size_columns=True, key='_ESCOLHA_TELA2_',
+                  justification='left', expand_x=True),),
         [sg.Button('Ok', size=(10,1), key='_OK_')],
         [sg.Button('Voltar', size=(10,1), key='_VOLTAR_')],
         [sg.Button('Sair', size=(10,1), key='_SAIR_')],
@@ -129,10 +140,18 @@ while True:
     if eventos == sg.WIN_CLOSED or eventos == '_SAIR_':
         break
     if eventos == '_AVANCAR_':
-        if (valores['_GRA_1_']== True or valores['_GRA_2_']== True or valores['_GRA_3_']==True):
+        if (valores['_GRA_1_'] == True):
             janela1.hide()
-            janela2 = tela_grafico()
-            resp = [valores['_GRA_1_'],valores['_GRA_2_'],valores['_GRA_3_']]
+            janela2 = tela_grafico(valores['_GRA_1_'])
+            resp = 1
+        elif (valores['_GRA_2_'] == True):
+            janela1.hide()
+            janela2 = tela_grafico(valores['_GRA_2_'])
+            resp = 2
+        elif (valores['_GRA_3_'] == True):
+            janela1.hide()
+            janela2 = tela_grafico(valores['_GRA_3_'])
+            resp = 3
         else:
             sg.popup_ok('Por gentileza, Escolha um tipo de gráfico\n',  title='Atenção')
 
@@ -141,7 +160,7 @@ while True:
         janela3 = janela_escolha()
 
     if eventos == '_puxar_dados_' and valores['_QUANTIDADE_DE_LINHAS_'] != '' and \
-            valores['_ESCOLHA_'] != '':
+        valores['_ESCOLHA_'] != '':
         nd = valores['_ESCOLHA_']
         bd = Dados[nd]
         bd = bd.fillna('Não informado')
@@ -150,8 +169,9 @@ while True:
         Dado_usado = bd.head(int(valores['_QUANTIDADE_DE_LINHAS_']))  # .tolist()
         # print(Dado_usado.values[3])
         Dado_usado = mostrar(Dado_usado.values)
+        janela3.hide()
         janela4 = janela_amostra(Dado_usado)
-        janela1.hide()
+
         print(Dado_usado)
 
     if eventos == '_GO_JANELA3_':
@@ -162,67 +182,68 @@ while True:
         janela3.hide()
         janela1 = tela_inicial()
 
-    if  eventos == '_OK_' and resp[0] == True:
+    if eventos == '_OK_' and resp == 1:
         if valores['_ESCOLHA_TELA2_'] == [0]:
             Dados['Data'] = pd.to_datetime(Dados['Data'])
             agrupamento_ano = Dados.groupby(Dados['Data'].dt.year)['Procedimento realizado'].count().plot(
                    kind='pie', autopct='%0.2f%%')
-            plt.title('Quantidade: ' + str(Dados['Data'].count()))
+            #plt.title('Quantidade: ' + str(Dados['Data'].count()))
             plt.show()
 
         elif valores['_ESCOLHA_TELA2_'] == [1]:
-            #labels = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
+            labels = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
             Dados['Data'] = pd.to_datetime(Dados['Data'])
-            agrupamento_mes = Dados.groupby(Dados['Data'].dt.month)['Procedimento realizado'].count().plot(kind='pie', autopct='%0.2f%%')
-           # plt.legend( loc='right',title='Quantidade: ' + str(Dados['Data'].count()))
+            agrupamento_mes = Dados.groupby(Dados['Data'].dt.month)['Procedimento realizado'].count().plot(labels=labels, kind='pie',
+                                                                                                           autopct='%0.2f%%')
+            #plt.legend(loc='right',title='Quantidade: ' + str(Dados['Data'].count()))
             plt.title('Quantidade: ' + str(Dados['Data'].count()))
             plt.show()
             #print(agrupamento_mes)
 
-        elif valores['_ESCOLHA_TELA2_'] == [3]:
-            Dados = Dados.groupby(Dados['Convenio'])['Procedimento realizado'].count()
-            Dados.plot(
-                kind='pie', autopct='%0.2f%%')
-            plt.show()
-
-        elif valores['_ESCOLHA_TELA2_'] == [4]:
-            # Dados = Dados.fillna('Não informado')
-            # Dados = Dados.groupby(Dados['Fornecedor'])['Total Guia'].value_counts()
-            # print(Dados.head(20))
-            # Dados.plot(
-            #      kind='pie', autopct='%0.2f%%')
-            # #plt.show()
-            # print(Dados.head())
-            Dados['Data'] = pd.to_datetime(Dados['Data'], format='%d-%m-%Y')
-            Dados['Ano'] = Dados['Data'].dt.year
-
-            Fornecedor_Ano = Dados.groupby('Fornecedor')['Total Guia'].sum()
-
-            plt.figure()
-            plt.pie(Fornecedor_Ano, labels=Fornecedor_Ano.index, autopct='%1.1f%%')
-            plt.title('Total de fornecedores por data (Todos os anos)')
-            plt.axis('equal')
-            plt.show()
-
-        elif valores['_ESCOLHA_TELA2_'] == [5]:
-            Dados['Data'] = pd.to_datetime(Dados['Data'])
-            Dados['Ano'] = Dados['Data'].dt.year
-
-            df_grouped = Dados.groupby(['Ano', 'Fornecedor'])['Total Guia'].sum().reset_index()
-
-            #plt.figure(figsize=(8, 6))
-
-            for ano in df_grouped['Ano'].unique():
-                df_ano = df_grouped[df_grouped['Ano'] == ano]
-                plt.pie(df_ano['Total Guia'], labels=df_ano['Fornecedor'], autopct='%1.0f%%', startangle=90)
-                plt.title(f'Total Produzido por Fornecedor - Ano {ano}')
-                plt.axis('equal')
-                plt.show()
+        # elif valores['_ESCOLHA_TELA2_'] == [3]:
+        #     Dados = Dados.groupby(Dados['Convenio'])['Procedimento realizado'].count()
+        #     Dados.plot(
+        #         kind='pie', autopct='%0.2f%%')
+        #     plt.show()
+        #
+        # elif valores['_ESCOLHA_TELA2_'] == [4]:
+        #     # Dados = Dados.fillna('Não informado')
+        #     # Dados = Dados.groupby(Dados['Fornecedor'])['Total Guia'].value_counts()
+        #     # print(Dados.head(20))
+        #     # Dados.plot(
+        #     #      kind='pie', autopct='%0.2f%%')
+        #     # #plt.show()
+        #     # print(Dados.head())
+        #     Dados['Data'] = pd.to_datetime(Dados['Data'], format='%d-%m-%Y')
+        #     Dados['Ano'] = Dados['Data'].dt.year
+        #
+        #     Fornecedor_Ano = Dados.groupby('Fornecedor')['Total Guia'].sum()
+        #
+        #     plt.figure()
+        #     plt.pie(Fornecedor_Ano, labels=Fornecedor_Ano.index, autopct='%1.1f%%')
+        #     plt.title('Total de fornecedores por data (Todos os anos)')
+        #     plt.axis('equal')
+        #     plt.show()
+        #
+        # elif valores['_ESCOLHA_TELA2_'] == [5]:
+        #     Dados['Data'] = pd.to_datetime(Dados['Data'])
+        #     Dados['Ano'] = Dados['Data'].dt.year
+        #
+        #     df_grouped = Dados.groupby(['Ano', 'Fornecedor'])['Total Guia'].sum().reset_index()
+        #
+        #     #plt.figure(figsize=(8, 6))
+        #
+        #     for ano in df_grouped['Ano'].unique():
+        #         df_ano = df_grouped[df_grouped['Ano'] == ano]
+        #         plt.pie(df_ano['Total Guia'], labels=df_ano['Fornecedor'], autopct='%1.0f%%', startangle=90)
+        #         plt.title(f'Total Produzido por Fornecedor - Ano {ano}')
+        #         plt.axis('equal')
+        #         plt.show()
             ##############################################################################################
 
 
 
-    # if eventos == '_OK_' and resp[1] == True:
+    # if eventos == '_OK_' and resp == 2:
     #     if valores['_ESCOLHA_TELA2_'] == [0]:
     #         Dados['Data'] = pd.to_datetime(Dados['Data'])
     #         agrupamento_ano = Dados.groupby(Dados['Data'].dt.year)['Procedimento realizado'].count().plot(
@@ -254,23 +275,23 @@ while True:
     #         # plt.legend(title='Convênio')
     #         plt.show()
     #
-    if eventos == '_OK_' and resp[2] == True:
-         if valores['_ESCOLHA_TELA2_'] == [0]:
-             Dados['Data'] = pd.to_datetime(Dados['Data'])
-             agrupamento_ano = Dados.groupby(Dados['Data'].dt.year)['Procedimento realizado'].count().plot(
-                 kind='line')
-             plt.show()
-         if valores['_ESCOLHA_TELA2_'] == [1]:
-             Dados['Data'] = pd.to_datetime(Dados['Data'])
-             agrupamento_mes = Dados.groupby(Dados['Data'].dt.month)['Procedimento realizado'].count().plot(
-                 kind='line')
-             plt.legend( loc='right',title='Quantidade: ' + str(Dados['Data'].count()))
-             plt.title('Quantidade: ' + str(Dados['Data'].count()))
-             plt.show()
-
-    if eventos == '_VOLTAR_':
-        janela2.hide()
-        janela1 = tela_inicial()
+    # if eventos == '_OK_' and resp == 3:
+    #      if valores['_ESCOLHA_TELA2_'] == [0]:
+    #          Dados['Data'] = pd.to_datetime(Dados['Data'])
+    #          agrupamento_ano = Dados.groupby(Dados['Data'].dt.year)['Procedimento realizado'].count().plot(
+    #              kind='line')
+    #          plt.show()
+    #      if valores['_ESCOLHA_TELA2_'] == [1]:
+    #          Dados['Data'] = pd.to_datetime(Dados['Data'])
+    #          agrupamento_mes = Dados.groupby(Dados['Data'].dt.month)['Procedimento realizado'].count().plot(
+    #              kind='line')
+    #          plt.legend( loc='right',title='Quantidade: ' + str(Dados['Data'].count()))
+    #          plt.title('Quantidade: ' + str(Dados['Data'].count()))
+    #          plt.show()
+    #
+    # if eventos == '_VOLTAR_':
+    #     janela2.hide()
+    #     janela1 = tela_inicial()
 
 
 
