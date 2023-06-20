@@ -10,10 +10,10 @@ Projeto feito como forma de avaliação (nota final) para a materia de "Topicos 
 - Utilização do arquivo em CVC servindo como cache para agilizar a leitura dos dados.
 
   ## Participantes:
-- Ademivaldo junior
+- Ademivaldo junior - https://github.com/Ademivaldo
 - Gustavo Bruno
-- Samuel Castro
-- Whitney César
+- Samuel Castro - https://github.com/SamuelFCstro
+- Whitney César - https://github.com/whitneycsantos
 
    
     Faculdade: Estácio de Sá - Goiás,  
