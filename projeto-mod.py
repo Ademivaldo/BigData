@@ -213,17 +213,21 @@ while True:
     if eventos == '_OK_' and resp == 1:
         # procedimentos realizados por ano
         if valores['_ESCOLHA_TELA2_'] == [0]:
-            Dados['Data'] = pd.to_datetime(Dados['Data'])
+            Dados['Data'] = DataU#pd.to_datetime(Dados['Data'])
+            #plt.figure(figsize=(20,10))
             agrupamento_ano = Dados.groupby(Dados['Data'].dt.year)['Procedimento realizado'].count().plot(
-                kind='pie', autopct='%0.2f%%')
-            # plt.title('Quantidade: ' + str(Dados['Data'].count()))
+                kind='pie', autopct='%0.2f%%', )
+            #plt.title('Quantidade: ' + str(Dados['Data'].count()))
+            #figManager = plt.get_current_fig_manager()
+            #figManager.full_screen_toggle()
+            #figManager.resize(1500,1700)
             plt.show()
 
         # procedimentos realizados por mês
         else:
             labels = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro',
                       'Outubro', 'Novembro', 'Dezembro']
-            Dados['Data'] = pd.to_datetime(Dados['Data'])
+            Dados['Data'] = DataU#pd.to_datetime(Dados['Data'])
             agrupamento_mes = Dados.groupby(Dados['Data'].dt.month)['Procedimento realizado'].count().plot(
                 labels=labels, kind='pie',
                 autopct='%0.2f%%')
@@ -236,7 +240,7 @@ while True:
     if eventos == '_OK_' and resp == 2:
         # Valor faturado por convênio e data
         if valores['_ESCOLHA_TELA2_'] == [0]:
-            Dados['Data'] = pd.to_datetime(Dados['Data'])
+            Dados['Data'] = DataU#pd.to_datetime(Dados['Data'])
             Dados['Data'] = Dados['Data'].dt.year
             Con_Dat = Dados.groupby(['Convenio', 'Data'])['Total Guia'].sum().unstack()
             Con_Dat.plot(kind='bar')
@@ -251,7 +255,7 @@ while True:
 
             # Quantidade de procedimentos realizados por convênio
 
-        if valores['_ESCOLHA_TELA2_'] == [1]:
+        elif valores['_ESCOLHA_TELA2_'] == [1]:
             Con__Qtd = Dados.groupby(['Convenio'])['Qtde'].sum()
             Con__Qtd.plot(kind='bar')
 
